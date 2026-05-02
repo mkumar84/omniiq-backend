@@ -22,6 +22,7 @@ warnings.filterwarnings("ignore")
 DATA_PATH = os.path.join("data", "online+retail+ii", "online_retail_II.xlsx")
 ARTIFACTS_DIR = "artifacts"
 CHANNELS = ["Email", "Paid Search", "Organic Search", "Social Media", "Direct"]
+GBP_TO_CAD = 1.74  # approximate exchange rate — update if needed
 
 
 # ── 1. Load & clean ──────────────────────────────────────────────────────────
@@ -60,7 +61,7 @@ def clean(df_raw):
 
     clean_df = df[~df["IsCancellation"]].copy()
     clean_df = clean_df[(clean_df["Quantity"] > 0) & (clean_df["Price"] > 0)].copy()
-    clean_df["Revenue"] = clean_df["Quantity"] * clean_df["Price"]
+    clean_df["Revenue"] = clean_df["Quantity"] * clean_df["Price"] * GBP_TO_CAD
     clean_df["Hour"] = clean_df["InvoiceDate"].dt.hour
     clean_df["DayOfWeek"] = clean_df["InvoiceDate"].dt.dayofweek  # 0=Mon, 6=Sun
 
@@ -379,8 +380,8 @@ def main():
     print("\n" + "=" * 55)
     print("  Pipeline complete!")
     print(f"  Customers:       {cache['total_customers']:,}")
-    print(f"  Total Revenue:   £{cache['total_revenue']:,.2f}")
-    print(f"  Avg Order Value: £{cache['avg_order_value']:.2f}")
+    print(f"  Total Revenue:   C${cache['total_revenue']:,.2f}")
+    print(f"  Avg Order Value: C${cache['avg_order_value']:.2f}")
     print(f"  Churn Rate:      {cache['churn_rate']:.1f}%")
     print(f"  Top Channel:     {cache['top_channel']}")
     print(f"  Largest Segment: {cache['largest_segment']}")
