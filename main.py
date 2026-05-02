@@ -74,25 +74,32 @@ def summary():
     }
 
 
+def _safe_narrate(key: str, fn, *args) -> str:
+    """Call a narrator function, cache the result, return fallback on error."""
+    if key not in _narrators:
+        try:
+            _narrators[key] = fn(*args)
+        except Exception as exc:
+            print(f"Narrator '{key}' failed: {exc}")
+            _narrators[key] = "AI insight temporarily unavailable."
+    return _narrators[key]
+
+
 @app.get("/segmentation")
 def segmentation():
     _require_cache()
-    if "segmentation" not in _narrators:
-        _narrators["segmentation"] = narrate_segmentation(_cache["segmentation"])
     return {
         "segments": _cache["segmentation"],
-        "insight": _narrators["segmentation"],
+        "insight": _safe_narrate("segmentation", narrate_segmentation, _cache["segmentation"]),
     }
 
 
 @app.get("/attribution")
 def attribution():
     _require_cache()
-    if "attribution" not in _narrators:
-        _narrators["attribution"] = narrate_attribution(_cache["attribution"])
     return {
         "channels": _cache["attribution"],
-        "insight": _narrators["attribution"],
+        "insight": _safe_narrate("attribution", narrate_attribution, _cache["attribution"]),
     }
 
 
@@ -105,9 +112,7 @@ def churn():
         "feature_names": _cache["churn_feature_names"],
         "churn_rate_pct": round(_cache["churn_rate"], 1),
     }
-    if "churn" not in _narrators:
-        _narrators["churn"] = narrate_churn(churn_payload)
-    return {**churn_payload, "insight": _narrators["churn"]}
+    return {**churn_payload, "insight": _safe_narrate("churn", narrate_churn, churn_payload)}
 
 
 @app.get("/campaign")
@@ -122,7 +127,11 @@ def campaign():
 @app.post("/query")
 def query(req: QueryRequest):
     _require_cache()
-    answer = answer_query(req.question, _cache)
+    try:
+        answer = answer_query(req.question, _cache)
+    except Exception as exc:
+        print(f"Query engine error: {exc}")
+        answer = "Unable to process query — AI service temporarily unavailable."
     return {
         "question": req.question,
         "answer": answer,
@@ -140,7 +149,9 @@ def recommendations(segment: str):
     if not seg_data:
         valid = [s["Segment"] for s in _cache["segmentation"]]
         raise HTTPException(404, f"Segment '{segment}' not found. Valid: {valid}")
-    return {
-        "segment": segment,
-        "recommendations": recommend_campaigns(seg_data),
-    }
+    try:
+        recs = recommend_campaigns(seg_data)
+    except Exception as exc:
+        print(f"Recommender error: {exc}")
+        recs = "Campaign recommendations temporarily unavailable."
+    return {"segment": segment, "recommendations": recs}
