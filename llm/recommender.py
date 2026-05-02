@@ -20,7 +20,7 @@ Segment name: {segment_name}
 Customer count: {customer_count}
 Avg recency (days): {avg_recency:.1f}
 Avg frequency: {avg_frequency:.1f}
-Avg monetary (GBP): {avg_monetary:.2f}
+Avg monetary (CAD): {avg_monetary:.2f}
 Churn risk (% high): {pct_high_churn:.1f}%
 Revenue share: {revenue_share_pct:.1f}%\
 """

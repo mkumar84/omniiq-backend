@@ -275,11 +275,12 @@ def build_campaign_analytics(df):
     pivot.columns.name = None
 
     top_products = (
-        df.groupby("Description")["Revenue"]
-        .sum()
-        .sort_values(ascending=False)
-        .head(10)
+        df.groupby(["StockCode", "Description"])
+        .agg(Revenue=("Revenue", "sum"), Quantity=("Quantity", "sum"))
         .reset_index()
+        .sort_values("Revenue", ascending=False)
+        .head(10)
+        .reset_index(drop=True)
     )
     return pivot, top_products
 
