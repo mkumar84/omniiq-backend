@@ -2,7 +2,10 @@
 
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+EASTERN = ZoneInfo("America/New_York")
 from typing import Any
 
 import joblib
@@ -57,7 +60,7 @@ def health():
         "status": "ok",
         "cache_loaded": bool(_cache),
         "model": "claude-sonnet-4-6",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(EASTERN).isoformat(),
     }
 
 
@@ -135,7 +138,7 @@ def query(req: QueryRequest):
     return {
         "question": req.question,
         "answer": answer,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(EASTERN).isoformat(),
     }
 
 

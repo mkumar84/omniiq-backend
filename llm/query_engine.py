@@ -1,5 +1,8 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+EASTERN = ZoneInfo("America/New_York")
 from .claude_client import call_claude
 
 NL_QUERY_PROMPT = """\
@@ -25,7 +28,7 @@ End with: 'Source: OmniIQ ML Analytics | {timestamp}'\
 
 
 def answer_query(question: str, cache: dict) -> str:
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    ts = datetime.now(EASTERN).strftime("%Y-%m-%d %H:%M EST")
     system = NL_QUERY_PROMPT.format(
         segmentation_json=json.dumps(cache.get("segmentation", []), default=str),
         attribution_json=json.dumps(cache.get("attribution", []), default=str),
